@@ -48,7 +48,7 @@ If you get an error saying you need xcb-shm run the following command then the p
 ```
 sudo apt install libxcb-shm0-dev
 ```
-Once completed, it should say found ninja anong with your version of ninja.
+Once completed, it should say found ninja along with your version of ninja.
 ### install vulkan libraries
 You first need to go into the other build directory.
 ```
