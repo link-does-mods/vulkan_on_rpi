@@ -1,6 +1,7 @@
 # Vulkan on Raspberry Pi
 A guide to setting up vulkan on the raspberry pi.
 ![vulkan logo](https://github.com/link-does-mods/vulkan_on_rpi/blob/main/Vulkan%20Logo.jpg?raw=true)
+Note: this may not work due to wayland-client on raspberry pis being out of date and there is no update as of now.   
 ### get necessary updates
 This is to make sure everything is up-to date and to make sure you have all the necessary packages before starting the setup process.
 ```
