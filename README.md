@@ -23,7 +23,7 @@ Once installed, run PiKISS and this screen appears. On this screen, select confi
 ![PiKISS-Configure](https://github.com/link-does-mods/vulkan_on_rpi/blob/main/PiKISS%20Screenshots/PiKISS-configure.jpg?raw=true)<br /><br />
 Then select vulkan to start compiling the vulkan drivers for your rpi4.
 ![PiKISS-Vulkan](https://github.com/link-does-mods/vulkan_on_rpi/blob/main/PiKISS%20Screenshots/PiKISS-vulkan.jpg?raw=true)<br /><br />
-Once the drivers are finished compiling, you should see this screen which confirms everything went well, and you are done.
+Once the drivers are finished compiling, you should see this screen which confirms everything went well, and you are done.<br />
 ![PiKISS-Vulkan Ready](https://github.com/link-does-mods/vulkan_on_rpi/blob/main/PiKISS%20Screenshots/PiKISS-vulkan-ready.jpg?raw=true)<br /><br />
 
 ### Compiling From Scratch
