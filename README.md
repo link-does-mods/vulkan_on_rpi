@@ -1,68 +1,95 @@
-# Vulkan on Raspberry Pi
+# Vulkan on Raspberry Pi 4
 A guide to setting up vulkan on the raspberry pi.
 ![vulkan logo](https://github.com/link-does-mods/vulkan_on_rpi/blob/main/Vulkan%20Logo.jpg?raw=true)
-Note: this may not work due to wayland-client on raspberry pis being out of date and there is no update as of now.   
-### get necessary updates
-This is to make sure everything is up-to date and to make sure you have all the necessary packages before starting the setup process.
+
+### Table of Contents
+- [TLDR](#tldr)
+- [Compiling From Scratch](#compiling-from-scratch)
+- [Demos](#demos)
+
+### TLDR
+You can install PiKISS to make everything much easier and quicker to install.
+```
+sudo apt install curl
+curl -sSL https://git.io/JfAPE | bash
+```
+
+Updating PiKISS:
+```
+cd ~/piKiss
+git pull
+```
+Once installed, run PiKISS and this screen appears. On this screen, select confiure.
+![PiKISS-Configure](https://github.com/link-does-mods/vulkan_on_rpi/blob/main/PiKISS%20Screenshots/PiKISS-configure.jpg?raw=true)<br /><br />
+Then select vulkan to start compiling the vulkan drivers for your rpi4.
+![PiKISS-Vulkan](https://github.com/link-does-mods/vulkan_on_rpi/blob/main/PiKISS%20Screenshots/PiKISS-vulkan.jpg?raw=true)<br /><br />
+Once the drivers are finished compiling, you should see this screen which confirms everything went well, and you are done.
+![PiKISS-Vulkan Ready](https://github.com/link-does-mods/vulkan_on_rpi/blob/main/PiKISS%20Screenshots/PiKISS-vulkan-ready.jpg?raw=true)<br /><br />
+
+### Compiling From Scratch
+First, you should check your architecture before manually compiling Vulkan.
+```
+uname -a 
+```
+![Version Check](https://github.com/link-does-mods/vulkan_on_rpi/blob/main/Manual%20Compile%20Screenshots/Version32_64.jpg?raw=true)<br /><br />
+
+Updating is important to do first before continuing.
 ```
 sudo apt update
 sudo apt upgrade
+``` 
+
+Install dependencies:
 ```
-### unlock build dependency on apt
+sudo apt install libxcb-randr0-dev libxrandr-dev libxcb-xinerama0-dev libxinerama-dev libxcursor-dev libxcb-cursor-dev libxkbcommon-dev xutils-dev xutils-dev libpthread-stubs0-dev libpciaccess-dev libffi-dev x11proto-xext-dev libxcb1-dev libxcb-*dev bison flex libssl-dev libgnutls28-dev x11proto-dri2-dev x11proto-dri3-dev libx11-dev libxcb-glx0-dev libx11-xcb-dev libxext-dev libxdamage-dev libxfixes-dev libva-dev x11proto-randr-dev x11proto-present-dev libclc-dev libelf-dev git build-essential mesa-utils libvulkan-dev ninja-build libvulkan1 python-mako libdrm-dev libxshmfence-dev libxxf86vm-dev libunwind-dev valgrind libzstd-dev vulkan-tools vulkan-utils ninja-build
 ```
-sudo nano /etc/apt/sources.list
+
+Remove old versions of Vulkan if installed already.
 ```
-Once inside the file, uncomment the following line:
+sudo rm -rf /home/pi/mesa_vulkan
 ```
-deb-src http://raspbian.raspberrypi.org/raspbian/ buster main contrib non-free rpi
+Now you can compile Vulkan for your rpi.
 ```
-Then hit ctrl+x, y, enter to save the changes to the file.
-### update repository list
+sudo apt purge meson -y
+sudo pip3 install meson
+sudo pip3 install mako
+cd ~ && git clone https://gitlab.freedesktop.org/mesa/mesa.git mesa_vulkan
+cd mesa_vulkan
 ```
-sudo apt update
+For 64-bit:
 ```
-### install vulkan tools
-This is needed to test and see if vulkan has been installed correctly.
+CFLAGS="-mcpu=cortex-a72" \
+CXXFLAGS="-mcpu=cortex-a72" \
 ```
-sudo apt install vulkan-tools
+For 32-bit:
 ```
-### build mesa libraries
-This is necessary to build the vulkan libraries.
+CFLAGS="-mcpu=cortex-a72 -mfpu=neon-fp-armv8" \
+CXXFLAGS="-mcpu=cortex-a72 -mfpu=neon-fp-armv8" \
 ```
-sudo apt build-dep mesa
 ```
-Then this grabs the libraries. 
+meson --prefix /usr \
+-D platforms=x11 \
+-D vulkan-drivers=broadcom \
+-D dri-drivers= \
+-D gallium-drivers=kmsro,v3d,vc4 \
+-D buildtype=release build
+ninja -C build -j4
+sudo ninja -C build install
 ```
-git clone https://gitlab.freedesktop.org/mesa/mesa
+Finally to make sure everything is working:
 ```
-Once the libraries are downloaded, make a directory inside the mesa folder called build and go to the directory.
+glxinfo -B
 ```
-cd mesa
+You should get this screen showing that everything works.
+![glxinfo -B Command](https://github.com/link-does-mods/vulkan_on_rpi/blob/main/Manual%20Compile%20Screenshots/glxinfo.jpg?raw=true)<br/><br/>
+### Demos
+This wouldn't be any useful without running some demos to test out the new drivers.
+```
+sudo apt install libassimp-dev
+git clone --recursive https://github.com/SaschaWillems/Vulkan.git  sascha-willems 
+cd sascha-willems && python3 download_assets.py
 mkdir build
-cd build
+cd build $ cmake -DCMAKE_BUILD_TYPE=Debug  .. 
+make -j4
 ```
-Once inside the build directory, run the following command
-```
-meson --libdir lib -Dplatforms=x11,auto -Dvulkan-drivers=broadcom -Ddri-drivers= -Dgallium-drivers=v3d,kmsro,vc4 -Dbuildtype=debug _buuild ..
-```
-If you get an error saying you need xcb-shm run the following command then the previous one again.
-```
-sudo apt install libxcb-shm0-dev
-```
-Once completed, it should say found ninja along with your version of ninja.
-### install vulkan libraries
-You first need to go into the other build directory.
-```
-cd _build
-```
-Then run the following command:
-```
-sudo ninja install
-```
-Once completed, vulkan should be installed on your rpi.
-### testing vulkan
-The last step is to test and see if everything was done correctly.
-```
-vkcube
-```
-If the following window shows a spinning cube, then you have sucessfully built and installed vulkan on your rpi.
+Everything is put into the build/bin folder. Just run the desired demo and see the drivers in action. 
